@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Truck, FileText, Users, DollarSign, Plus, Moon, Sun, LogOut, Settings } from 'lucide-react';
+import { Truck, FileText, Users, DollarSign, Plus, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -43,6 +43,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('create');
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [darkMode, setDarkMode] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [stats, setStats] = useState({
     totalInvoices: 0,
     pendingPayment: 0,
@@ -124,146 +125,186 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors">
-      {/* Header */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <div className="bg-blue-600 rounded-xl p-3">
-                <Truck className="h-6 w-6 text-white" />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+      {/* Mobile Header */}
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 safe-area-top">
+        <div className="px-4 sm:px-6">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <div className="bg-blue-600 rounded-xl p-2">
+                <Truck className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Haul-It Pro</h1>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">Professional trucking management</p>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">Haul-It Pro</h1>
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Sun className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                <Switch checked={darkMode} onCheckedChange={toggleDarkMode} />
-                <Moon className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-              </div>
-              
-              <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400">
-                <span>Welcome, {user?.username}</span>
-              </div>
-              
+            {/* Mobile menu button */}
+            <div className="flex items-center space-x-2">
               <Button
-                onClick={logout}
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="border-slate-200 dark:border-slate-600"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden"
               >
-                <LogOut className="h-4 w-4 mr-1" />
-                Logout
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
+              
+              {/* Desktop controls */}
+              <div className="hidden md:flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Sun className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  <Switch checked={darkMode} onCheckedChange={toggleDarkMode} />
+                  <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                </div>
+                
+                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                  <span>Welcome, {user?.username}</span>
+                </div>
+                
+                <Button
+                  onClick={logout}
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-200 dark:border-gray-600"
+                >
+                  <LogOut className="h-4 w-4 mr-1" />
+                  Logout
+                </Button>
+              </div>
             </div>
           </div>
+
+          {/* Mobile dropdown menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Dark Mode</span>
+                  <div className="flex items-center space-x-2">
+                    <Sun className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    <Switch checked={darkMode} onCheckedChange={toggleDarkMode} />
+                    <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  </div>
+                </div>
+                
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Welcome, {user?.username}
+                </div>
+                
+                <Button
+                  onClick={logout}
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-gray-200 dark:border-gray-600"
+                >
+                  <LogOut className="h-4 w-4 mr-1" />
+                  Logout
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-white dark:bg-slate-800 border-0 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Invoices</CardTitle>
-              <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+      <main className="px-4 sm:px-6 py-4 safe-area-bottom">
+        {/* Stats Cards - Mobile Optimized */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+          <Card className="bg-white dark:bg-gray-800 border-0 shadow-sm">
+            <CardHeader className="pb-2 px-3 pt-3">
+              <div className="flex items-center justify-between">
+                <div className="p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <FileText className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                </div>
               </div>
+              <CardTitle className="text-xs font-medium text-gray-600 dark:text-gray-400">Total Invoices</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">{stats.totalInvoices}</div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">All time</p>
+            <CardContent className="px-3 pb-3">
+              <div className="text-xl font-bold text-gray-900 dark:text-white">{stats.totalInvoices}</div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-slate-800 border-0 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">Pending Payment</CardTitle>
-              <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                <DollarSign className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+          <Card className="bg-white dark:bg-gray-800 border-0 shadow-sm">
+            <CardHeader className="pb-2 px-3 pt-3">
+              <div className="flex items-center justify-between">
+                <div className="p-1.5 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                  <DollarSign className="h-3 w-3 text-orange-600 dark:text-orange-400" />
+                </div>
               </div>
+              <CardTitle className="text-xs font-medium text-gray-600 dark:text-gray-400">Pending</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(stats.pendingPayment)}</div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Outstanding balance</p>
+            <CardContent className="px-3 pb-3">
+              <div className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(stats.pendingPayment)}</div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-slate-800 border-0 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">Active Drivers</CardTitle>
-              <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
+          <Card className="bg-white dark:bg-gray-800 border-0 shadow-sm">
+            <CardHeader className="pb-2 px-3 pt-3">
+              <div className="flex items-center justify-between">
+                <div className="p-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <Users className="h-3 w-3 text-green-600 dark:text-green-400" />
+                </div>
               </div>
+              <CardTitle className="text-xs font-medium text-gray-600 dark:text-gray-400">Drivers</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">{stats.activeDrivers}</div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">All available</p>
+            <CardContent className="px-3 pb-3">
+              <div className="text-xl font-bold text-gray-900 dark:text-white">{stats.activeDrivers}</div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-slate-800 border-0 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">This Month</CardTitle>
-              <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                <Truck className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+          <Card className="bg-white dark:bg-gray-800 border-0 shadow-sm">
+            <CardHeader className="pb-2 px-3 pt-3">
+              <div className="flex items-center justify-between">
+                <div className="p-1.5 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <Truck className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                </div>
               </div>
+              <CardTitle className="text-xs font-medium text-gray-600 dark:text-gray-400">This Month</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(stats.thisMonth)}</div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Total revenue</p>
+            <CardContent className="px-3 pb-3">
+              <div className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(stats.thisMonth)}</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Interface */}
-        <Card className="bg-white dark:bg-slate-800 border-0 shadow-sm">
-          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
-            <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white">Invoice Management</CardTitle>
-            <CardDescription className="text-slate-600 dark:text-slate-400">
-              Create new invoices, track payments, and manage your trucking business
-            </CardDescription>
-          </CardHeader>
+        {/* Main Interface - Mobile Optimized */}
+        <Card className="bg-white dark:bg-gray-800 border-0 shadow-sm">
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-slate-100 dark:bg-slate-700 m-4 mb-0 h-11">
+              <TabsList className="grid w-full grid-cols-3 bg-gray-100 dark:bg-gray-700 m-3 mb-0 h-12 rounded-xl">
                 <TabsTrigger 
                   value="create" 
-                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 font-medium"
+                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 font-medium rounded-lg text-xs sm:text-sm"
                 >
                   <Plus className="h-4 w-4" />
-                  Create Invoice
+                  <span className="hidden sm:inline">Create</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="history" 
-                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 font-medium"
+                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 font-medium rounded-lg text-xs sm:text-sm"
                 >
                   <FileText className="h-4 w-4" />
-                  Invoice History
+                  <span className="hidden sm:inline">History</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="drivers" 
-                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 font-medium"
+                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 font-medium rounded-lg text-xs sm:text-sm"
                 >
                   <Users className="h-4 w-4" />
-                  Drivers
+                  <span className="hidden sm:inline">Drivers</span>
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="create" className="mt-0 p-6">
+              <TabsContent value="create" className="mt-0 p-4">
                 <InvoiceForm />
               </TabsContent>
 
-              <TabsContent value="history" className="mt-0 p-6">
+              <TabsContent value="history" className="mt-0 p-4">
                 <InvoiceHistory />
               </TabsContent>
 
-              <TabsContent value="drivers" className="mt-0 p-6">
+              <TabsContent value="drivers" className="mt-0 p-4">
                 <DriverManagement />
               </TabsContent>
             </Tabs>
