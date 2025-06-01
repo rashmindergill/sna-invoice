@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -175,47 +174,49 @@ const InvoiceForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Load Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Load Information</CardTitle>
-            <CardDescription>Enter the basic load details</CardDescription>
+        <Card className="bg-gray-50 border-0 rounded-2xl">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold text-gray-900">Load Information</CardTitle>
+            <CardDescription className="text-gray-500">Enter the basic load details</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div>
-              <Label htmlFor="loadNumber">Load Number *</Label>
+              <Label htmlFor="loadNumber" className="text-sm font-medium text-gray-700 mb-2 block">Load Number *</Label>
               <Input
                 id="loadNumber"
                 value={formData.loadNumber}
                 onChange={(e) => handleInputChange('loadNumber', e.target.value)}
                 placeholder="L-2024-001"
                 required
+                className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12"
               />
               {formData.loadNumber && (
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-gray-500 mt-2 font-medium">
                   Invoice #: {generateInvoiceNumber(formData.loadNumber)}
                 </p>
               )}
             </div>
 
             <div className="relative">
-              <Label htmlFor="broker">Broker *</Label>
+              <Label htmlFor="broker" className="text-sm font-medium text-gray-700 mb-2 block">Broker *</Label>
               <Input
                 id="broker"
                 value={formData.broker}
                 onChange={(e) => handleInputChange('broker', e.target.value)}
                 placeholder="Enter or select broker"
                 required
+                className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12"
               />
               {showBrokerSuggestions && (
-                <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-md shadow-lg mt-1">
+                <div className="absolute z-10 w-full bg-white border-0 rounded-xl shadow-lg mt-2 overflow-hidden">
                   {filteredBrokers.map((broker, index) => (
                     <button
                       key={index}
                       type="button"
-                      className="w-full px-3 py-2 text-left hover:bg-gray-100 first:rounded-t-md last:rounded-b-md"
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors font-medium"
                       onClick={() => handleBrokerSelect(broker)}
                     >
                       {broker}
@@ -226,9 +227,9 @@ const InvoiceForm = () => {
             </div>
 
             <div>
-              <Label htmlFor="rate">Rate ($) *</Label>
+              <Label htmlFor="rate" className="text-sm font-medium text-gray-700 mb-2 block">Rate ($) *</Label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="rate"
                   type="number"
@@ -236,7 +237,7 @@ const InvoiceForm = () => {
                   value={formData.rate}
                   onChange={(e) => handleInputChange('rate', e.target.value)}
                   placeholder="0.00"
-                  className="pl-10"
+                  className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12 pl-12 text-lg font-semibold"
                   required
                 />
               </div>
@@ -245,21 +246,21 @@ const InvoiceForm = () => {
         </Card>
 
         {/* Driver and Truck */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Driver & Truck</CardTitle>
-            <CardDescription>Select driver and view truck assignment</CardDescription>
+        <Card className="bg-gray-50 border-0 rounded-2xl">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold text-gray-900">Driver & Truck</CardTitle>
+            <CardDescription className="text-gray-500">Select driver and view truck assignment</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div>
-              <Label htmlFor="driver">Driver *</Label>
+              <Label htmlFor="driver" className="text-sm font-medium text-gray-700 mb-2 block">Driver *</Label>
               <Select value={formData.driver} onValueChange={(value) => handleInputChange('driver', value)}>
-                <SelectTrigger>
+                <SelectTrigger className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12">
                   <SelectValue placeholder="Select driver" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="border-0 rounded-xl shadow-lg">
                   {drivers.map((driver) => (
-                    <SelectItem key={driver.id} value={driver.id}>
+                    <SelectItem key={driver.id} value={driver.id} className="rounded-lg">
                       {driver.name}
                     </SelectItem>
                   ))}
@@ -269,11 +270,11 @@ const InvoiceForm = () => {
 
             {selectedDriver && (
               <div>
-                <Label>Truck Number</Label>
+                <Label className="text-sm font-medium text-gray-700 mb-2 block">Truck Number</Label>
                 <Input
                   value={selectedDriver.truckNumber}
                   readOnly
-                  className="bg-muted"
+                  className="border-0 bg-white rounded-xl shadow-sm h-12 text-gray-600"
                 />
               </div>
             )}
@@ -282,78 +283,84 @@ const InvoiceForm = () => {
       </div>
 
       {/* Route Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Route Information</CardTitle>
-          <CardDescription>Pickup and delivery details</CardDescription>
+      <Card className="bg-gray-50 border-0 rounded-2xl">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-semibold text-gray-900">Route Information</CardTitle>
+          <CardDescription className="text-gray-500">Pickup and delivery details</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="pickupLocation">Pickup Location</Label>
+              <Label htmlFor="pickupLocation" className="text-sm font-medium text-gray-700 mb-2 block">Pickup Location</Label>
               <Input
                 id="pickupLocation"
                 value={formData.pickupLocation}
                 onChange={(e) => handleInputChange('pickupLocation', e.target.value)}
                 placeholder="City, State"
+                className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12"
               />
             </div>
             <div>
-              <Label htmlFor="deliveryLocation">Delivery Location</Label>
+              <Label htmlFor="deliveryLocation" className="text-sm font-medium text-gray-700 mb-2 block">Delivery Location</Label>
               <Input
                 id="deliveryLocation"
                 value={formData.deliveryLocation}
                 onChange={(e) => handleInputChange('deliveryLocation', e.target.value)}
                 placeholder="City, State"
+                className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="pickupDate">Pickup Date</Label>
+              <Label htmlFor="pickupDate" className="text-sm font-medium text-gray-700 mb-2 block">Pickup Date</Label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="pickupDate"
                   type="date"
                   value={formData.pickupDate}
                   onChange={(e) => handleInputChange('pickupDate', e.target.value)}
-                  className="pl-10"
+                  className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12 pl-12"
                 />
               </div>
             </div>
             <div>
-              <Label htmlFor="deliveryDate">Delivery Date</Label>
+              <Label htmlFor="deliveryDate" className="text-sm font-medium text-gray-700 mb-2 block">Delivery Date</Label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="deliveryDate"
                   type="date"
                   value={formData.deliveryDate}
                   onChange={(e) => handleInputChange('deliveryDate', e.target.value)}
-                  className="pl-10"
+                  className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12 pl-12"
                 />
               </div>
             </div>
           </div>
 
           <div>
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes" className="text-sm font-medium text-gray-700 mb-2 block">Notes</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => handleInputChange('notes', e.target.value)}
               placeholder="Additional notes or special instructions"
-              rows={3}
+              rows={4}
+              className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow resize-none"
             />
           </div>
         </CardContent>
       </Card>
 
       <div className="flex justify-end">
-        <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2">
-          <Download className="h-4 w-4 mr-2" />
+        <Button 
+          type="submit" 
+          className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 h-auto rounded-xl font-semibold shadow-sm hover:shadow-md transition-all duration-200"
+        >
+          <Download className="h-5 w-5 mr-2" />
           Generate Invoice PDF
         </Button>
       </div>

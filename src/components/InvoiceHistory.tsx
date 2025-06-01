@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,11 +76,11 @@ const InvoiceHistory = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'paid':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Paid</Badge>;
+        return <Badge className="bg-green-50 text-green-700 hover:bg-green-50 border-0 rounded-lg font-medium">Paid</Badge>;
       case 'partial':
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Partial</Badge>;
+        return <Badge className="bg-orange-50 text-orange-700 hover:bg-orange-50 border-0 rounded-lg font-medium">Partial</Badge>;
       default:
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Unpaid</Badge>;
+        return <Badge className="bg-red-50 text-red-700 hover:bg-red-50 border-0 rounded-lg font-medium">Unpaid</Badge>;
     }
   };
 
@@ -144,39 +143,39 @@ const InvoiceHistory = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Filter Invoices</CardTitle>
-          <CardDescription>Search and filter your invoice history</CardDescription>
+      <Card className="bg-gray-50 border-0 rounded-2xl">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-semibold text-gray-900">Filter Invoices</CardTitle>
+          <CardDescription className="text-gray-500">Search and filter your invoice history</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <Label htmlFor="search">Search</Label>
+              <Label htmlFor="search" className="text-sm font-medium text-gray-700 mb-2 block">Search</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="search"
                   placeholder="Search invoices..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12 pl-12"
                 />
               </div>
             </div>
             <div>
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status" className="text-sm font-medium text-gray-700 mb-2 block">Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="unpaid">Unpaid</SelectItem>
-                  <SelectItem value="partial">Partial</SelectItem>
-                  <SelectItem value="paid">Paid</SelectItem>
+                <SelectContent className="border-0 rounded-xl shadow-lg">
+                  <SelectItem value="all" className="rounded-lg">All Statuses</SelectItem>
+                  <SelectItem value="unpaid" className="rounded-lg">Unpaid</SelectItem>
+                  <SelectItem value="partial" className="rounded-lg">Partial</SelectItem>
+                  <SelectItem value="paid" className="rounded-lg">Paid</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -185,51 +184,54 @@ const InvoiceHistory = () => {
       </Card>
 
       {/* Invoice Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Invoice History</CardTitle>
-          <CardDescription>
+      <Card className="bg-white border-0 shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="border-b border-gray-100 bg-gray-50">
+          <CardTitle className="text-lg font-semibold text-gray-900">Invoice History</CardTitle>
+          <CardDescription className="text-gray-500">
             {filteredInvoices.length} invoice{filteredInvoices.length !== 1 ? 's' : ''} found
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Invoice #</TableHead>
-                  <TableHead>Load #</TableHead>
-                  <TableHead>Broker</TableHead>
-                  <TableHead>Driver</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Actions</TableHead>
+                <TableRow className="border-b border-gray-100 hover:bg-transparent">
+                  <TableHead className="font-semibold text-gray-700 h-14">Invoice #</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Load #</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Broker</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Driver</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Amount</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Status</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Created</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredInvoices.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      No invoices found
+                    <TableCell colSpan={8} className="text-center py-12 text-gray-500">
+                      <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-lg font-medium">No invoices found</p>
+                      <p className="text-sm">Create your first invoice to get started</p>
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredInvoices.map((invoice) => (
-                    <TableRow key={invoice.id}>
-                      <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
-                      <TableCell>{invoice.loadNumber}</TableCell>
-                      <TableCell>{invoice.broker}</TableCell>
-                      <TableCell>{invoice.driver}</TableCell>
-                      <TableCell>{formatCurrency(invoice.rate)}</TableCell>
+                    <TableRow key={invoice.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                      <TableCell className="font-semibold text-gray-900 h-16">{invoice.invoiceNumber}</TableCell>
+                      <TableCell className="text-gray-700">{invoice.loadNumber}</TableCell>
+                      <TableCell className="text-gray-700">{invoice.broker}</TableCell>
+                      <TableCell className="text-gray-700">{invoice.driver}</TableCell>
+                      <TableCell className="font-semibold text-gray-900">{formatCurrency(invoice.rate)}</TableCell>
                       <TableCell>{getStatusBadge(invoice.status)}</TableCell>
-                      <TableCell>{formatDate(invoice.createdAt)}</TableCell>
+                      <TableCell className="text-gray-500">{formatDate(invoice.createdAt)}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleDownloadPDF(invoice)}
+                            className="border-0 bg-gray-100 hover:bg-gray-200 rounded-lg h-8 w-8 p-0"
                           >
                             <Download className="h-3 w-3" />
                           </Button>
@@ -237,6 +239,7 @@ const InvoiceHistory = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handlePaymentUpdate(invoice)}
+                            className="border-0 bg-gray-100 hover:bg-gray-200 rounded-lg h-8 w-8 p-0"
                           >
                             <Edit className="h-3 w-3" />
                           </Button>
@@ -253,73 +256,81 @@ const InvoiceHistory = () => {
 
       {/* Payment Update Dialog */}
       <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent>
+        <DialogContent className="border-0 rounded-2xl shadow-2xl">
           <DialogHeader>
-            <DialogTitle>Update Payment Status</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl font-semibold text-gray-900">Update Payment Status</DialogTitle>
+            <DialogDescription className="text-gray-500">
               Update payment information for invoice {selectedInvoice?.invoiceNumber}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <Label htmlFor="paymentStatus">Payment Status</Label>
+              <Label htmlFor="paymentStatus" className="text-sm font-medium text-gray-700 mb-2 block">Payment Status</Label>
               <Select 
                 value={paymentForm.status} 
                 onValueChange={(value: 'paid' | 'partial') => 
                   setPaymentForm(prev => ({ ...prev, status: value }))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="border-0 bg-gray-50 rounded-xl h-12">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="paid">Paid</SelectItem>
-                  <SelectItem value="partial">Partial Payment</SelectItem>
+                <SelectContent className="border-0 rounded-xl shadow-lg">
+                  <SelectItem value="paid" className="rounded-lg">Paid</SelectItem>
+                  <SelectItem value="partial" className="rounded-lg">Partial Payment</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label htmlFor="paymentMethod">Payment Method</Label>
+              <Label htmlFor="paymentMethod" className="text-sm font-medium text-gray-700 mb-2 block">Payment Method</Label>
               <Input
                 id="paymentMethod"
                 value={paymentForm.method}
                 onChange={(e) => setPaymentForm(prev => ({ ...prev, method: e.target.value }))}
                 placeholder="e.g., Check, Wire Transfer, ACH"
+                className="border-0 bg-gray-50 rounded-xl h-12"
               />
             </div>
             <div>
-              <Label htmlFor="paymentDate">Payment Date</Label>
+              <Label htmlFor="paymentDate" className="text-sm font-medium text-gray-700 mb-2 block">Payment Date</Label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="paymentDate"
                   type="date"
                   value={paymentForm.date}
                   onChange={(e) => setPaymentForm(prev => ({ ...prev, date: e.target.value }))}
-                  className="pl-10"
+                  className="border-0 bg-gray-50 rounded-xl h-12 pl-12"
                 />
               </div>
             </div>
             <div>
-              <Label htmlFor="paymentAmount">Amount Paid</Label>
+              <Label htmlFor="paymentAmount" className="text-sm font-medium text-gray-700 mb-2 block">Amount Paid</Label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="paymentAmount"
                   type="number"
                   step="0.01"
                   value={paymentForm.amount}
                   onChange={(e) => setPaymentForm(prev => ({ ...prev, amount: e.target.value }))}
-                  className="pl-10"
+                  className="border-0 bg-gray-50 rounded-xl h-12 pl-12 text-lg font-semibold"
                 />
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>
+          <DialogFooter className="flex gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setPaymentDialogOpen(false)}
+              className="border border-gray-200 bg-white hover:bg-gray-50 rounded-xl px-6"
+            >
               Cancel
             </Button>
-            <Button onClick={savePaymentUpdate}>
+            <Button 
+              onClick={savePaymentUpdate}
+              className="bg-gray-900 hover:bg-gray-800 text-white rounded-xl px-6"
+            >
               Update Payment
             </Button>
           </DialogFooter>
