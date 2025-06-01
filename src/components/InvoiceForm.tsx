@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,8 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Download, Calendar, DollarSign, Plus, Trash2 } from 'lucide-react';
+import { Download, Calendar, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generateInvoicePDF } from '@/utils/pdfGenerator';
 
@@ -15,11 +13,6 @@ interface Driver {
   id: string;
   name: string;
   truckNumber: string;
-}
-
-interface AdditionalCost {
-  name: string;
-  amount: number;
 }
 
 interface Invoice {
@@ -40,8 +33,6 @@ interface Invoice {
   paymentDate?: string;
   paidAmount?: number;
   createdAt: string;
-  additionalCosts?: AdditionalCost[];
-  includePickupInfo?: boolean;
 }
 
 const InvoiceForm = () => {
@@ -54,9 +45,12 @@ const InvoiceForm = () => {
     { id: '5', name: 'Lisa Anderson', truckNumber: 'TRK-005' },
   ]);
 
-  const [savedBrokers, setSavedBrokers] = useState<string[]>([]);
-  const [includePickupInfo, setIncludePickupInfo] = useState(true);
-  const [additionalCosts, setAdditionalCosts] = useState<AdditionalCost[]>([]);
+  const [savedBrokers, setSavedBrokers] = useState<string[]>([
+    'ABC Logistics',
+    'Express Freight',
+    'Nationwide Transport',
+    'Quick Haul Inc',
+  ]);
 
   const [formData, setFormData] = useState({
     loadNumber: '',
@@ -73,12 +67,6 @@ const InvoiceForm = () => {
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [filteredBrokers, setFilteredBrokers] = useState<string[]>([]);
   const [showBrokerSuggestions, setShowBrokerSuggestions] = useState(false);
-
-  useEffect(() => {
-    // Load saved brokers from localStorage
-    const saved = JSON.parse(localStorage.getItem('savedBrokers') || '[]');
-    setSavedBrokers(saved);
-  }, []);
 
   useEffect(() => {
     if (formData.driver) {
@@ -119,20 +107,6 @@ const InvoiceForm = () => {
     setShowBrokerSuggestions(false);
   };
 
-  const addAdditionalCost = () => {
-    setAdditionalCosts([...additionalCosts, { name: '', amount: 0 }]);
-  };
-
-  const updateAdditionalCost = (index: number, field: 'name' | 'amount', value: string | number) => {
-    const updated = [...additionalCosts];
-    updated[index] = { ...updated[index], [field]: value };
-    setAdditionalCosts(updated);
-  };
-
-  const removeAdditionalCost = (index: number) => {
-    setAdditionalCosts(additionalCosts.filter((_, i) => i !== index));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -162,8 +136,6 @@ const InvoiceForm = () => {
       notes: formData.notes,
       status: 'unpaid',
       createdAt: new Date().toISOString(),
-      additionalCosts: additionalCosts.filter(cost => cost.name && cost.amount),
-      includePickupInfo,
     };
 
     // Save to localStorage
@@ -199,54 +171,52 @@ const InvoiceForm = () => {
       notes: '',
     });
     setSelectedDriver(null);
-    setAdditionalCosts([]);
-    setIncludePickupInfo(true);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Load Information */}
-        <Card className="border border-gray-200 shadow-sm">
+        <Card className="bg-gray-50 border-0 rounded-2xl">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-medium">Load Information</CardTitle>
-            <CardDescription>Enter the basic load details</CardDescription>
+            <CardTitle className="text-lg font-semibold text-gray-900">Load Information</CardTitle>
+            <CardDescription className="text-gray-500">Enter the basic load details</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div>
-              <Label htmlFor="loadNumber" className="text-sm font-medium mb-2 block">Load Number *</Label>
+              <Label htmlFor="loadNumber" className="text-sm font-medium text-gray-700 mb-2 block">Load Number *</Label>
               <Input
                 id="loadNumber"
                 value={formData.loadNumber}
                 onChange={(e) => handleInputChange('loadNumber', e.target.value)}
                 placeholder="L-2024-001"
                 required
-                className="h-10"
+                className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12"
               />
               {formData.loadNumber && (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 mt-2 font-medium">
                   Invoice #: {generateInvoiceNumber(formData.loadNumber)}
                 </p>
               )}
             </div>
 
             <div className="relative">
-              <Label htmlFor="broker" className="text-sm font-medium mb-2 block">Broker *</Label>
+              <Label htmlFor="broker" className="text-sm font-medium text-gray-700 mb-2 block">Broker *</Label>
               <Input
                 id="broker"
                 value={formData.broker}
                 onChange={(e) => handleInputChange('broker', e.target.value)}
                 placeholder="Enter or select broker"
                 required
-                className="h-10"
+                className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12"
               />
               {showBrokerSuggestions && (
-                <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg mt-1 shadow-lg overflow-hidden">
+                <div className="absolute z-10 w-full bg-white border-0 rounded-xl shadow-lg mt-2 overflow-hidden">
                   {filteredBrokers.map((broker, index) => (
                     <button
                       key={index}
                       type="button"
-                      className="w-full px-3 py-2 text-left hover:bg-gray-50 transition-colors"
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors font-medium"
                       onClick={() => handleBrokerSelect(broker)}
                     >
                       {broker}
@@ -257,9 +227,9 @@ const InvoiceForm = () => {
             </div>
 
             <div>
-              <Label htmlFor="rate" className="text-sm font-medium mb-2 block">Rate ($) *</Label>
+              <Label htmlFor="rate" className="text-sm font-medium text-gray-700 mb-2 block">Rate ($) *</Label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="rate"
                   type="number"
@@ -267,77 +237,30 @@ const InvoiceForm = () => {
                   value={formData.rate}
                   onChange={(e) => handleInputChange('rate', e.target.value)}
                   placeholder="0.00"
-                  className="h-10 pl-10"
+                  className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12 pl-12 text-lg font-semibold"
                   required
                 />
               </div>
-            </div>
-
-            {/* Additional Costs */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label className="text-sm font-medium">Additional Costs</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addAdditionalCost}
-                  className="h-8 px-3"
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Add
-                </Button>
-              </div>
-              {additionalCosts.map((cost, index) => (
-                <div key={index} className="flex gap-2 mb-2">
-                  <Input
-                    placeholder="e.g., Detention, Lumper"
-                    value={cost.name}
-                    onChange={(e) => updateAdditionalCost(index, 'name', e.target.value)}
-                    className="h-8"
-                  />
-                  <div className="relative">
-                    <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={cost.amount || ''}
-                      onChange={(e) => updateAdditionalCost(index, 'amount', parseFloat(e.target.value) || 0)}
-                      className="h-8 pl-6 w-24"
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeAdditionalCost(index)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              ))}
             </div>
           </CardContent>
         </Card>
 
         {/* Driver and Truck */}
-        <Card className="border border-gray-200 shadow-sm">
+        <Card className="bg-gray-50 border-0 rounded-2xl">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-medium">Driver & Truck</CardTitle>
-            <CardDescription>Select driver and view truck assignment</CardDescription>
+            <CardTitle className="text-lg font-semibold text-gray-900">Driver & Truck</CardTitle>
+            <CardDescription className="text-gray-500">Select driver and view truck assignment</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div>
-              <Label htmlFor="driver" className="text-sm font-medium mb-2 block">Driver *</Label>
+              <Label htmlFor="driver" className="text-sm font-medium text-gray-700 mb-2 block">Driver *</Label>
               <Select value={formData.driver} onValueChange={(value) => handleInputChange('driver', value)}>
-                <SelectTrigger className="h-10">
+                <SelectTrigger className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12">
                   <SelectValue placeholder="Select driver" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="border-0 rounded-xl shadow-lg">
                   {drivers.map((driver) => (
-                    <SelectItem key={driver.id} value={driver.id}>
+                    <SelectItem key={driver.id} value={driver.id} className="rounded-lg">
                       {driver.name}
                     </SelectItem>
                   ))}
@@ -347,11 +270,11 @@ const InvoiceForm = () => {
 
             {selectedDriver && (
               <div>
-                <Label className="text-sm font-medium mb-2 block">Truck Number</Label>
+                <Label className="text-sm font-medium text-gray-700 mb-2 block">Truck Number</Label>
                 <Input
                   value={selectedDriver.truckNumber}
                   readOnly
-                  className="h-10 bg-gray-50"
+                  className="border-0 bg-white rounded-xl shadow-sm h-12 text-gray-600"
                 />
               </div>
             )}
@@ -359,88 +282,74 @@ const InvoiceForm = () => {
         </Card>
       </div>
 
-      {/* Pickup Information Toggle */}
-      <Card className="border border-gray-200 shadow-sm">
+      {/* Route Information */}
+      <Card className="bg-gray-50 border-0 rounded-2xl">
         <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold text-gray-900">Route Information</CardTitle>
+          <CardDescription className="text-gray-500">Pickup and delivery details</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <CardTitle className="text-lg font-medium">Route Information</CardTitle>
-              <CardDescription>Pickup and delivery details</CardDescription>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Label htmlFor="pickup-toggle" className="text-sm font-medium">Include pickup info</Label>
-              <Switch
-                id="pickup-toggle"
-                checked={includePickupInfo}
-                onCheckedChange={setIncludePickupInfo}
+              <Label htmlFor="pickupLocation" className="text-sm font-medium text-gray-700 mb-2 block">Pickup Location</Label>
+              <Input
+                id="pickupLocation"
+                value={formData.pickupLocation}
+                onChange={(e) => handleInputChange('pickupLocation', e.target.value)}
+                placeholder="City, State"
+                className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12"
               />
             </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {includePickupInfo && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="pickupLocation" className="text-sm font-medium mb-2 block">Pickup Location</Label>
-                <Input
-                  id="pickupLocation"
-                  value={formData.pickupLocation}
-                  onChange={(e) => handleInputChange('pickupLocation', e.target.value)}
-                  placeholder="City, State"
-                  className="h-10"
-                />
-              </div>
-              <div>
-                <Label htmlFor="pickupDate" className="text-sm font-medium mb-2 block">Pickup Date</Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="pickupDate"
-                    type="date"
-                    value={formData.pickupDate}
-                    onChange={(e) => handleInputChange('pickupDate', e.target.value)}
-                    className="h-10 pl-10"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="deliveryLocation" className="text-sm font-medium mb-2 block">Delivery Location</Label>
+              <Label htmlFor="deliveryLocation" className="text-sm font-medium text-gray-700 mb-2 block">Delivery Location</Label>
               <Input
                 id="deliveryLocation"
                 value={formData.deliveryLocation}
                 onChange={(e) => handleInputChange('deliveryLocation', e.target.value)}
                 placeholder="City, State"
-                className="h-10"
+                className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12"
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="deliveryDate" className="text-sm font-medium mb-2 block">Delivery Date</Label>
+              <Label htmlFor="pickupDate" className="text-sm font-medium text-gray-700 mb-2 block">Pickup Date</Label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                  id="pickupDate"
+                  type="date"
+                  value={formData.pickupDate}
+                  onChange={(e) => handleInputChange('pickupDate', e.target.value)}
+                  className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12 pl-12"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="deliveryDate" className="text-sm font-medium text-gray-700 mb-2 block">Delivery Date</Label>
+              <div className="relative">
+                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="deliveryDate"
                   type="date"
                   value={formData.deliveryDate}
                   onChange={(e) => handleInputChange('deliveryDate', e.target.value)}
-                  className="h-10 pl-10"
+                  className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow h-12 pl-12"
                 />
               </div>
             </div>
           </div>
 
           <div>
-            <Label htmlFor="notes" className="text-sm font-medium mb-2 block">Notes</Label>
+            <Label htmlFor="notes" className="text-sm font-medium text-gray-700 mb-2 block">Notes</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => handleInputChange('notes', e.target.value)}
               placeholder="Additional notes or special instructions"
-              rows={3}
-              className="resize-none"
+              rows={4}
+              className="border-0 bg-white rounded-xl shadow-sm focus:shadow-md transition-shadow resize-none"
             />
           </div>
         </CardContent>
@@ -449,9 +358,9 @@ const InvoiceForm = () => {
       <div className="flex justify-end">
         <Button 
           type="submit" 
-          className="bg-black hover:bg-gray-800 text-white px-6 py-2 h-10 font-medium"
+          className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 h-auto rounded-xl font-semibold shadow-sm hover:shadow-md transition-all duration-200"
         >
-          <Download className="h-4 w-4 mr-2" />
+          <Download className="h-5 w-5 mr-2" />
           Generate Invoice PDF
         </Button>
       </div>
