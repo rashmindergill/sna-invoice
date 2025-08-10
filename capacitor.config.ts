@@ -3,7 +3,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.haul.app',
-  appName: 'haul-it-invoice-pro',
+  appName: 'sna-invoice',
   webDir: 'dist',
   server: {
     androidScheme: 'https',

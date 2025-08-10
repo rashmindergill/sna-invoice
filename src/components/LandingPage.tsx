@@ -21,7 +21,7 @@ const LandingPage = () => {
     if (success) {
       toast({
         title: "Welcome back!",
-        description: "Successfully logged in to Haul-It Pro.",
+        description: "Successfully logged in to SNA Invoicing.",
       });
     } else {
       toast({
