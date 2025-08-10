@@ -1,465 +1,228 @@
+import React, { useMemo, useRef } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Download, Printer } from "lucide-react";
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Calendar, DollarSign, Plus, X, MapPin } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { generateInvoicePDF } from '@/utils/pdfGenerator';
+/**
+ * Single-file invoice preview component
+ * - Minimal, Apple-like aesthetic (thin typography, generous whitespace)
+ * - Dark-mode friendly (inherits parent .dark)
+ * - Uses shadcn/ui primitives you already have in your project
+ * - Print button calls window.print() (use browser "Save as PDF" to export)
+ */
 
-interface Driver {
-  id: string;
-  name: string;
-  truckNumber: string;
-}
-
-interface AdditionalCost {
-  description: string;
-  amount: number;
-}
-
-interface Invoice {
-  id: string;
-  invoiceNumber: string;
-  loadNumber: string;
-  broker: string;
-  driver: string;
-  truckNumber: string;
-  rate: number;
-  pickupLocation: string;
-  deliveryLocation: string;
-  pickupDate: string;
-  deliveryDate: string;
-  notes: string;
-  status: 'unpaid' | 'paid' | 'partial';
-  paymentMethod?: string;
-  paymentDate?: string;
-  paidAmount?: number;
-  createdAt: string;
-  additionalCosts?: AdditionalCost[];
-  includeRouteInfo?: boolean;
-}
-
-const InvoiceForm = () => {
-  const { toast } = useToast();
-  const [drivers] = useState<Driver[]>([
-    { id: '1', name: 'John Smith', truckNumber: 'TRK-001' },
-    { id: '2', name: 'Mike Johnson', truckNumber: 'TRK-002' },
-    { id: '3', name: 'Sarah Davis', truckNumber: 'TRK-003' },
-    { id: '4', name: 'Robert Wilson', truckNumber: 'TRK-004' },
-    { id: '5', name: 'Lisa Anderson', truckNumber: 'TRK-005' },
-  ]);
-
-  const [savedBrokers, setSavedBrokers] = useState<string[]>([]);
-  const [includeRouteInfo, setIncludeRouteInfo] = useState(true);
-  const [additionalCosts, setAdditionalCosts] = useState<AdditionalCost[]>([]);
-
-  const [formData, setFormData] = useState({
-    loadNumber: '',
-    broker: '',
-    driver: '',
-    rate: '',
-    pickupLocation: '',
-    deliveryLocation: '',
-    pickupDate: '',
-    deliveryDate: '',
-    notes: '',
-  });
-
-  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
-
-  useEffect(() => {
-    // Load saved brokers
-    const brokers = JSON.parse(localStorage.getItem('savedBrokers') || '[]');
-    setSavedBrokers(brokers);
-  }, []);
-
-  useEffect(() => {
-    if (formData.driver) {
-      const driver = drivers.find(d => d.id === formData.driver);
-      setSelectedDriver(driver || null);
-    }
-  }, [formData.driver, drivers]);
-
-  const generateInvoiceNumber = (loadNumber: string) => {
-    if (!loadNumber) return '';
-    const date = new Date();
-    const year = date.getFullYear().toString().slice(-2);
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    return `INV-${year}${month}-${loadNumber}`;
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const addAdditionalCost = () => {
-    setAdditionalCosts(prev => [...prev, { description: '', amount: 0 }]);
-  };
-
-  const updateAdditionalCost = (index: number, field: 'description' | 'amount', value: string | number) => {
-    setAdditionalCosts(prev => prev.map((cost, i) => 
-      i === index ? { ...cost, [field]: value } : cost
-    ));
-  };
-
-  const removeAdditionalCost = (index: number) => {
-    setAdditionalCosts(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const calculateTotal = () => {
-    const baseRate = parseFloat(formData.rate) || 0;
-    const additionalTotal = additionalCosts.reduce((sum, cost) => sum + (cost.amount || 0), 0);
-    return baseRate + additionalTotal;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.loadNumber || !formData.broker || !formData.driver || !formData.rate) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const invoiceNumber = generateInvoiceNumber(formData.loadNumber);
-    
-    const invoice: Invoice = {
-      id: Date.now().toString(),
-      invoiceNumber,
-      loadNumber: formData.loadNumber,
-      broker: formData.broker,
-      driver: selectedDriver?.name || '',
-      truckNumber: selectedDriver?.truckNumber || '',
-      rate: parseFloat(formData.rate),
-      pickupLocation: formData.pickupLocation,
-      deliveryLocation: formData.deliveryLocation,
-      pickupDate: formData.pickupDate,
-      deliveryDate: formData.deliveryDate,
-      notes: formData.notes,
-      status: 'unpaid',
-      createdAt: new Date().toISOString(),
-      additionalCosts: additionalCosts.filter(cost => cost.description && cost.amount > 0),
-      includeRouteInfo,
-    };
-
-    // Save to localStorage
-    const existingInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-    existingInvoices.push(invoice);
-    localStorage.setItem('invoices', JSON.stringify(existingInvoices));
-
-    // Add broker to saved brokers if not already there
-    if (!savedBrokers.includes(formData.broker)) {
-      const updatedBrokers = [...savedBrokers, formData.broker];
-      setSavedBrokers(updatedBrokers);
-      localStorage.setItem('savedBrokers', JSON.stringify(updatedBrokers));
-    }
-
-    // Generate PDF
-    await generateInvoicePDF(invoice);
-
-    toast({
-      title: "Invoice Created",
-      description: `Invoice ${invoiceNumber} has been generated successfully.`,
-    });
-
-    // Reset form
-    setFormData({
-      loadNumber: '',
-      broker: '',
-      driver: '',
-      rate: '',
-      pickupLocation: '',
-      deliveryLocation: '',
-      pickupDate: '',
-      deliveryDate: '',
-      notes: '',
-    });
-    setSelectedDriver(null);
-    setAdditionalCosts([]);
-  };
-
-  return (
-    <div className="max-w-4xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Create New Invoice</h2>
-        </div>
-
-        {/* Basic Information */}
-        <Card className="border-0 shadow-sm bg-white dark:bg-slate-800">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Basic Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="loadNumber" className="text-sm font-medium text-slate-700 dark:text-slate-300">Load Number *</Label>
-                <Input
-                  id="loadNumber"
-                  value={formData.loadNumber}
-                  onChange={(e) => handleInputChange('loadNumber', e.target.value)}
-                  placeholder="L-2024-001"
-                  required
-                  className="mt-1 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
-                />
-                {formData.loadNumber && (
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    Invoice #: {generateInvoiceNumber(formData.loadNumber)}
-                  </p>
-                )}
-              </div>
-
-              <div>
-  <Label htmlFor="broker" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-    Broker *
-  </Label>
-  <input
-    list="broker-options"
-    id="broker"
-    name="broker"
-    value={formData.broker}
-    onChange={(e) => handleInputChange('broker', e.target.value)}
-    placeholder="Select or enter broker"
-    className="mt-1 w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded"
-  />
-  <datalist id="broker-options">
-    {savedBrokers.map((broker, index) => (
-      <option key={index} value={broker} />
-    ))}
-  </datalist>
-</div>
-
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="driver" className="text-sm font-medium text-slate-700 dark:text-slate-300">Driver *</Label>
-                <Select value={formData.driver} onValueChange={(value) => handleInputChange('driver', value)}>
-                  <SelectTrigger className="mt-1 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600">
-                    <SelectValue placeholder="Select driver" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {drivers.map((driver) => (
-                      <SelectItem key={driver.id} value={driver.id}>
-                        {driver.name} - {driver.truckNumber}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="rate" className="text-sm font-medium text-slate-700 dark:text-slate-300">Base Rate *</Label>
-                <div className="relative mt-1">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input
-                    id="rate"
-                    type="number"
-                    step="0.01"
-                    value={formData.rate}
-                    onChange={(e) => handleInputChange('rate', e.target.value)}
-                    placeholder="0.00"
-                    className="pl-10 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Additional Costs */}
-        <Card className="border-0 shadow-sm bg-white dark:bg-slate-800">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Additional Costs</CardTitle>
-              <Button
-                type="button"
-                onClick={addAdditionalCost}
-                variant="outline"
-                size="sm"
-                className="border-slate-200 dark:border-slate-600"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Cost
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {additionalCosts.map((cost, index) => (
-              <div key={index} className="flex gap-3 items-end">
-                <div className="flex-1">
-                  <Input
-                    placeholder="Description (e.g., Detention, Lumper)"
-                    value={cost.description}
-                    onChange={(e) => updateAdditionalCost(index, 'description', e.target.value)}
-                    className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
-                  />
-                </div>
-                <div className="w-32">
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={cost.amount || ''}
-                      onChange={(e) => updateAdditionalCost(index, 'amount', parseFloat(e.target.value) || 0)}
-                      className="pl-10 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
-                    />
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  onClick={() => removeAdditionalCost(index)}
-                  variant="outline"
-                  size="sm"
-                  className="border-slate-200 dark:border-slate-600 text-red-600 hover:text-red-700"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-            
-            {calculateTotal() > 0 && (
-              <div className="pt-3 border-t border-slate-200 dark:border-slate-600">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-slate-900 dark:text-white">Total Amount:</span>
-                  <span className="text-xl font-bold text-slate-900 dark:text-white">
-                    ${calculateTotal().toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Route Information Toggle */}
-        <Card className="border-0 shadow-sm bg-white dark:bg-slate-800">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Route Information</CardTitle>
-                <CardDescription className="text-slate-600 dark:text-slate-400">
-                  Include pickup and delivery details on invoice
-                </CardDescription>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={includeRouteInfo}
-                  onCheckedChange={setIncludeRouteInfo}
-                />
-                <Label className="text-sm text-slate-700 dark:text-slate-300">
-                  {includeRouteInfo ? 'Included' : 'Excluded'}
-                </Label>
-              </div>
-            </div>
-          </CardHeader>
-          {includeRouteInfo && (
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="pickupLocation" className="text-sm font-medium text-slate-700 dark:text-slate-300">Pickup Location</Label>
-                  <div className="relative mt-1">
-                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                      id="pickupLocation"
-                      value={formData.pickupLocation}
-                      onChange={(e) => handleInputChange('pickupLocation', e.target.value)}
-                      placeholder="City, State"
-                      className="pl-10 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="deliveryLocation" className="text-sm font-medium text-slate-700 dark:text-slate-300">Delivery Location</Label>
-                  <div className="relative mt-1">
-                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                      id="deliveryLocation"
-                      value={formData.deliveryLocation}
-                      onChange={(e) => handleInputChange('deliveryLocation', e.target.value)}
-                      placeholder="City, State"
-                      className="pl-10 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="pickupDate" className="text-sm font-medium text-slate-700 dark:text-slate-300">Pickup Date</Label>
-                  <div className="relative mt-1">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                      id="pickupDate"
-                      type="date"
-                      value={formData.pickupDate}
-                      onChange={(e) => handleInputChange('pickupDate', e.target.value)}
-                      className="pl-10 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="deliveryDate" className="text-sm font-medium text-slate-700 dark:text-slate-300">Delivery Date</Label>
-                  <div className="relative mt-1">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                      id="deliveryDate"
-                      type="date"
-                      value={formData.deliveryDate}
-                      onChange={(e) => handleInputChange('deliveryDate', e.target.value)}
-                      className="pl-10 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          )}
-        </Card>
-
-        {/* Notes */}
-        <Card className="border-0 shadow-sm bg-white dark:bg-slate-800">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => handleInputChange('notes', e.target.value)}
-              placeholder="Additional notes or special instructions"
-              rows={3}
-              className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 resize-none"
-            />
-          </CardContent>
-        </Card>
-
-        {/* Submit Button */}
-        <div className="flex justify-end">
-          <Button 
-            type="submit" 
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 h-auto font-semibold"
-          >
-            <Download className="h-5 w-5 mr-2" />
-            Generate Invoice PDF
-          </Button>
-        </div>
-      </form>
-    </div>
-  );
+const sample = {
+  company: {
+    name: "SNA Transport, Inc.",
+    address: "1950 Logistics Way, Huber Heights, OH 45424",
+    phone: "(937) 555-0142",
+    email: "billing@snatransport.com",
+  },
+  broker: {
+    name: "Roadly Logistics LLC",
+    address: "P.O. Box 737606, Dallas, TX 75373-7606",
+    email: "ap@roadlylogistics.com",
+  },
+  invoice: {
+    loadNumber: "76430",
+    invoiceNumber: "INV-76430", // based off load number
+    invoiceDate: new Date().toLocaleDateString(),
+    dueDate: new Date(Date.now() + 7 * 86400000).toLocaleDateString(),
+    status: "Unpaid" as "Unpaid" | "Paid" | "Partial",
+  },
+  driver: {
+    name: "Kuljeet",
+    truck: "702", // per your mapping
+  },
+  ship: {
+    pickup: {
+      name: "ABC Plastics Warehouse",
+      city: "Lebanon, IN",
+      date: "08/08/2025",
+    },
+    delivery: {
+      name: "Fairfield Distribution Center",
+      city: "Fairfield, OH",
+      date: "08/08/2025",
+    },
+  },
+  items: [
+    { description: "Linehaul – KY → IN (Round Trip)", qty: 1, rate: 650.0 },
+    { description: "Fuel Surcharge", qty: 1, rate: 85.0 },
+    { description: "Detention (1 hr)", qty: 1, rate: 50.0 },
+  ],
+  notes:
+    "Please make checks payable to SNA Transport, Inc. Include Load #76430 on payment. Attachments: Rate Confirmation (pg 2), BOL (pg 3).",
+  remitTo: {
+    name: "SNA Transport, Inc.",
+    address1: "1950 Logistics Way",
+    address2: "Huber Heights, OH 45424",
+  },
 };
 
-export default InvoiceForm;
+function currency(n: number) {
+  return n.toLocaleString(undefined, { style: "currency", currency: "USD" });
+}
+
+export default function InvoicePreview() {
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const { subTotal, total } = useMemo(() => {
+    const sub = sample.items.reduce((acc, i) => acc + i.qty * i.rate, 0);
+    return { subTotal: sub, total: sub };
+  }, []);
+
+  return (
+    <div className="mx-auto max-w-4xl p-4 sm:p-6 lg:p-8">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Invoice Preview</h1>
+        <div className="flex gap-2 print:hidden">
+          <Button variant="outline" onClick={() => window.print()}>
+            <Printer className="mr-2 h-4 w-4" /> Print / PDF
+          </Button>
+          <Button variant="secondary" onClick={() => window.print()}>
+            <Download className="mr-2 h-4 w-4" /> Download
+          </Button>
+        </div>
+      </div>
+
+      <Card ref={printRef} className="shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <CardTitle className="text-2xl font-semibold tracking-tight">
+                {sample.company.name}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {sample.company.address}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {sample.company.phone} • {sample.company.email}
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl font-semibold tracking-tight">INVOICE</div>
+              <div className="mt-2 flex items-center justify-end gap-2">
+                <span className="text-sm text-muted-foreground">Status</span>
+                <Badge variant={sample.invoice.status === "Paid" ? "default" : "secondary"}>
+                  {sample.invoice.status}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="pt-0">
+          {/* Meta Row */}
+          <div className="grid grid-cols-1 gap-6 rounded-xl bg-muted/30 p-4 text-sm sm:grid-cols-3">
+            <div>
+              <div className="text-muted-foreground">Invoice #</div>
+              <div className="font-medium">{sample.invoice.invoiceNumber}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">Load #</div>
+              <div className="font-medium">{sample.invoice.loadNumber}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">Invoice Date / Due</div>
+              <div className="font-medium">
+                {sample.invoice.invoiceDate} • {sample.invoice.dueDate}
+              </div>
+            </div>
+          </div>
+
+          {/* Parties */}
+          <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="rounded-xl border p-4">
+              <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Bill To</div>
+              <div className="font-medium">{sample.broker.name}</div>
+              <div className="text-sm text-muted-foreground">{sample.broker.address}</div>
+              <div className="text-sm text-muted-foreground">{sample.broker.email}</div>
+            </div>
+            <div className="rounded-xl border p-4">
+              <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Driver / Equipment</div>
+              <div className="font-medium">{sample.driver.name}</div>
+              <div className="text-sm text-muted-foreground">Truck #{sample.driver.truck}</div>
+              <div className="mt-2 text-sm text-muted-foreground">
+                PU: {sample.ship.pickup.name} — {sample.ship.pickup.city} ({sample.ship.pickup.date})
+              </div>
+              <div className="text-sm text-muted-foreground">
+                DEL: {sample.ship.delivery.name} — {sample.ship.delivery.city} ({sample.ship.delivery.date})
+              </div>
+            </div>
+          </div>
+
+          {/* Line Items */}
+          <div className="mt-6 overflow-hidden rounded-xl border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Description</TableHead>
+                  <TableHead className="w-20 text-right">Qty</TableHead>
+                  <TableHead className="w-40 text-right">Rate</TableHead>
+                  <TableHead className="w-40 text-right">Amount</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sample.items.map((it, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="align-top">{it.description}</TableCell>
+                    <TableCell className="text-right align-top">{it.qty}</TableCell>
+                    <TableCell className="text-right align-top">{currency(it.rate)}</TableCell>
+                    <TableCell className="text-right align-top">{currency(it.qty * it.rate)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Totals */}
+          <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
+            <div className="sm:col-span-2">
+              <div className="rounded-xl bg-muted/20 p-4 text-sm text-muted-foreground">
+                {sample.notes}
+              </div>
+            </div>
+            <div className="rounded-xl border p-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span className="font-medium">{currency(subTotal)}</span>
+              </div>
+              <Separator className="my-2" />
+              <div className="flex items-center justify-between text-base">
+                <span className="font-medium">Total Due</span>
+                <span className="font-semibold tracking-tight">{currency(total)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Remit To */}
+          <div className="mt-8 rounded-xl border p-4 text-sm">
+            <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Remit To</div>
+            <div className="font-medium">{sample.remitTo.name}</div>
+            <div className="text-muted-foreground">{sample.remitTo.address1}</div>
+            <div className="text-muted-foreground">{sample.remitTo.address2}</div>
+          </div>
+
+          <div className="mt-6 text-center text-xs text-muted-foreground">
+            Thank you for your business.
+          </div>
+        </CardContent>
+      </Card>
+
+      <style jsx global>{`
+        /* Print styles */
+        @media print {
+          body { background: white !important; }
+          .print\\:hidden { display: none !important; }
+          /* Expand to full width on print */
+          .max-w-4xl { max-width: 100% !important; }
+          .shadow-sm { box-shadow: none !important; }
+        }
+      `}</style>
+    </div>
+  );
+}
