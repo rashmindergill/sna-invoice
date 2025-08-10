@@ -2,7 +2,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.049249e676024626a2591031cf52efb7',
+  appId: 'com.haul.app',
   appName: 'haul-it-invoice-pro',
   webDir: 'dist',
   server: {

@@ -195,7 +195,6 @@ const InvoiceForm = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Create New Invoice</h2>
-          <p className="text-slate-600 dark:text-slate-400 mt-1">Generate professional invoices for your freight services</p>
         </div>
 
         {/* Basic Information */}
@@ -223,18 +222,25 @@ const InvoiceForm = () => {
               </div>
 
               <div>
-                <Label htmlFor="broker" className="text-sm font-medium text-slate-700 dark:text-slate-300">Broker *</Label>
-                <Select value={formData.broker} onValueChange={(value) => handleInputChange('broker', value)}>
-                  <SelectTrigger className="mt-1 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600">
-                    <SelectValue placeholder="Select or enter broker" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {savedBrokers.map((broker, index) => (
-                      <SelectItem key={index} value={broker}>{broker}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+  <Label htmlFor="broker" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+    Broker *
+  </Label>
+  <input
+    list="broker-options"
+    id="broker"
+    name="broker"
+    value={formData.broker}
+    onChange={(e) => handleInputChange('broker', e.target.value)}
+    placeholder="Select or enter broker"
+    className="mt-1 w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded"
+  />
+  <datalist id="broker-options">
+    {savedBrokers.map((broker, index) => (
+      <option key={index} value={broker} />
+    ))}
+  </datalist>
+</div>
+
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

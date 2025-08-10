@@ -41,12 +41,12 @@ export const generateInvoicePDF = async (invoice: Invoice) => {
   pdf.setFontSize(24);
   pdf.setFont('helvetica', 'normal');
   pdf.setTextColor(0, 0, 0);
-  pdf.text('HAUL-IT PRO', margin, yPos);
+  pdf.text('COMPANY NAME', margin, yPos);
   
   yPos += 8;
   pdf.setFontSize(10);
   pdf.setTextColor(100, 100, 100);
-  pdf.text('Professional Trucking Services', margin, yPos);
+  pdf.text('', margin, yPos);
   
   // Invoice details on the right
   pdf.setTextColor(0, 0, 0);
@@ -77,7 +77,7 @@ export const generateInvoicePDF = async (invoice: Invoice) => {
   // Table header with minimal lines
   const tableStartY = yPos;
   const colWidths = [40, 40, 40, 35, 35];
-  const headers = ['DESCRIPTION', 'LOAD #', 'DRIVER', 'TRUCK', 'AMOUNT'];
+  const headers = ['LOAD #', 'DRIVER', 'TRUCK', 'AMOUNT'];
   
   pdf.setFontSize(8);
   pdf.setTextColor(100, 100, 100);
@@ -104,7 +104,6 @@ export const generateInvoicePDF = async (invoice: Invoice) => {
   
   xPos = margin;
   const rowData = [
-    'Freight Transportation',
     invoice.loadNumber,
     invoice.driver,
     invoice.truckNumber,

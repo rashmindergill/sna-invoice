@@ -135,7 +135,7 @@ const Index = () => {
                 <Truck className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white">Haul-It Pro</h1>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">FleetWave 2.0</h1>
               </div>
             </div>
             

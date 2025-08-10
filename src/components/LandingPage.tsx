@@ -42,7 +42,7 @@ const LandingPage = () => {
               <div className="bg-blue-600 rounded-xl p-2">
                 <Truck className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-white">Haul-It Pro</span>
+              <span className="text-xl font-bold text-white">FleetWave 2.0</span>
             </div>
             <Button 
               onClick={() => setShowLogin(true)}
